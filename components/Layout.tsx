@@ -5,8 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ActionPanel } from "@/components/action-panel/ActionPanel";
 import { ChatHistorySidebar } from "@/components/ChatHistorySidebar";
 import { UnifiedVoiceChat } from "@/components/UnifiedVoiceChat";
-import { BookingPopup, RestaurantBookingData } from "@/components/BookingPopup";
-import { RecipePopup, RecipeData } from "@/components/RecipePopup";
 import { useLocationPermission } from "@/lib/location";
 import "@/lib/restaurant-display"; // This makes the global functions available
 import {
@@ -34,10 +32,6 @@ export default function Layout() {
   const [isPanelOpen, setPanelOpen] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [bookingData, setBookingData] = useState<RestaurantBookingData[]>([]);
-  const [recipeData, setRecipeData] = useState<RecipeData[]>([]);
-  const [showBookingPopup, setShowBookingPopup] = useState(false);
-  const [showRecipePopup, setShowRecipePopup] = useState(false);
   const {
     permission: locationPermission,
     coordinates,
@@ -152,10 +146,17 @@ export default function Layout() {
           bookingResult.hasNewData &&
           bookingResult.data
         ) {
-          const { bookings, timestamp } = bookingResult.data;
+          const { bookings, timestamp, searchQuery } = bookingResult.data;
           lastBookingTimestamp = timestamp;
-          setBookingData(bookings);
-          setShowBookingPopup(true);
+
+          // Set up the booking panel using ActionPanel
+          setFeaturePayload({
+            type: "booking",
+            bookings: bookings,
+            searchQuery: searchQuery || "Restaurant booking",
+          });
+          setActiveFeature("booking");
+          setPanelOpen(true);
         }
 
         // Poll for recipe data
@@ -169,10 +170,17 @@ export default function Layout() {
           recipeResult.hasNewData &&
           recipeResult.data
         ) {
-          const { recipes, timestamp } = recipeResult.data;
+          const { recipes, timestamp, searchQuery } = recipeResult.data;
           lastRecipeTimestamp = timestamp;
-          setRecipeData(recipes);
-          setShowRecipePopup(true);
+
+          // Set up the recipe panel using ActionPanel
+          setFeaturePayload({
+            type: "recipe-detail",
+            recipes: recipes,
+            searchQuery: searchQuery || "Recipe search",
+          });
+          setActiveFeature("recipe-detail");
+          setPanelOpen(true);
         }
       } catch (error) {
         console.error("Error polling for data:", error);
@@ -389,20 +397,6 @@ export default function Layout() {
         setFeaturePayload={setFeaturePayload}
         setActiveIntent={setActiveIntent}
         userLocation={coordinates}
-      />
-
-      {/* Booking Popup */}
-      <BookingPopup
-        bookings={bookingData}
-        isOpen={showBookingPopup}
-        onClose={() => setShowBookingPopup(false)}
-      />
-
-      {/* Recipe Popup */}
-      <RecipePopup
-        recipes={recipeData}
-        isOpen={showRecipePopup}
-        onClose={() => setShowRecipePopup(false)}
       />
     </div>
   );

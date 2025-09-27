@@ -15,7 +15,13 @@ export enum ConversationMode {
   Speaking = "SPEAKING",
 }
 
-export type ActiveFeature = "recipe" | "maps" | "order" | null;
+export type ActiveFeature =
+  | "recipe"
+  | "maps"
+  | "order"
+  | "booking"
+  | "recipe-detail"
+  | null;
 
 export type FeatureIntent =
   | "idle"
@@ -112,4 +118,3 @@ export interface ChatApiResponse {
   intent?: ChatIntentResponse;
   featurePayload?: FeaturePayload;
 }
-

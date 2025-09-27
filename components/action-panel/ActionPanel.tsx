@@ -8,6 +8,8 @@ import type { LocationCoordinates } from "@/lib/location";
 import { RecipePanel } from "@/components/action-panel/RecipePanel";
 import { RestaurantPanel } from "@/components/action-panel/RestaurantPanel";
 import { OrderPanel } from "@/components/action-panel/OrderPanel";
+import { BookingPanel } from "@/components/action-panel/BookingPanel";
+import { RecipeDetailPanel } from "@/components/action-panel/RecipeDetailPanel";
 
 interface ActionPanelProps {
   isOpen: boolean;
@@ -65,6 +67,20 @@ export function ActionPanel({
             setFeaturePayload={setFeaturePayload}
           />
         );
+      case "booking":
+        return (
+          <BookingPanel
+            payload={featurePayload}
+            setFeaturePayload={setFeaturePayload}
+          />
+        );
+      case "recipe-detail":
+        return (
+          <RecipeDetailPanel
+            payload={featurePayload}
+            setFeaturePayload={setFeaturePayload}
+          />
+        );
       default:
         return null;
     }
@@ -101,6 +117,10 @@ export function ActionPanel({
                     ? "Restaurant Explorer"
                     : activeFeature === "order"
                     ? "Delivery Simulator"
+                    : activeFeature === "booking"
+                    ? "Reservation Confirmed"
+                    : activeFeature === "recipe-detail"
+                    ? "Recipe Collection"
                     : "TasteBuds"}
                 </Dialog.Title>
                 <div className="mt-4 max-h-[60vh] overflow-y-auto pr-2">
