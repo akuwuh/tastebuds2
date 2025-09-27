@@ -3,29 +3,41 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import type { RestaurantFeaturePayload, RestaurantSearchResult } from "@/lib/types";
+import type {
+  RestaurantFeaturePayload,
+  RestaurantSearchResult,
+} from "@/lib/types";
+import type { LocationCoordinates } from "@/lib/location";
 import { shimmerClassName } from "@/lib/ui";
 import { RestaurantCard } from "@/components/restaurants/RestaurantCard";
 
 const Map = dynamic(() => import("@/components/restaurants/RestaurantMap"), {
   ssr: false,
   loading: () => (
-    <div className={`h-64 w-full rounded-2xl ${shimmerClassName}`} aria-hidden />
+    <div
+      className={`h-64 w-full rounded-2xl ${shimmerClassName}`}
+      aria-hidden
+    />
   ),
 });
 
 interface RestaurantPanelProps {
   payload?: Record<string, unknown>;
   setFeaturePayload: (payload?: Record<string, unknown>) => void;
+  userLocation?: LocationCoordinates | null;
 }
 
-export function RestaurantPanel({ payload, setFeaturePayload }: RestaurantPanelProps) {
+export function RestaurantPanel({
+  payload,
+  setFeaturePayload,
+  userLocation,
+}: RestaurantPanelProps) {
   const featurePayload = payload as RestaurantFeaturePayload | undefined;
   const [results, setResults] = useState<RestaurantSearchResult[]>(
-    featurePayload?.results ?? [],
+    featurePayload?.results ?? []
   );
   const [isLoading, setIsLoading] = useState(
-    featurePayload ? featurePayload.stage !== "results" : true,
+    featurePayload ? featurePayload.stage !== "results" : true
   );
 
   const cuisine = featurePayload?.cuisine ?? "food";
@@ -48,11 +60,19 @@ export function RestaurantPanel({ payload, setFeaturePayload }: RestaurantPanelP
     const fetchRestaurants = async () => {
       try {
         setIsLoading(true);
+
+        // Use user location if available, otherwise default to San Francisco
+        const locationParam = userLocation
+          ? `${userLocation.latitude},${userLocation.longitude}`
+          : "San Francisco";
+
         const response = await fetch(
           `/api/search/restaurants?cuisine=${encodeURIComponent(
-            cuisine,
-          )}&radius=${radiusMeters}&location=San Francisco`,
-          { signal: controller.signal },
+            cuisine
+          )}&radius=${radiusMeters}&location=${encodeURIComponent(
+            locationParam
+          )}`,
+          { signal: controller.signal }
         );
         if (!response.ok) {
           throw new Error("Failed to fetch restaurant results");
@@ -77,7 +97,7 @@ export function RestaurantPanel({ payload, setFeaturePayload }: RestaurantPanelP
     return () => {
       controller.abort();
     };
-  }, [featurePayload, cuisine, radiusMeters, setFeaturePayload]);
+  }, [featurePayload, cuisine, radiusMeters, setFeaturePayload, userLocation]);
 
   return (
     <div className="space-y-6">
@@ -102,14 +122,21 @@ export function RestaurantPanel({ payload, setFeaturePayload }: RestaurantPanelP
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
         >
-          <Map restaurants={results} isLoading={isLoading} />
+          <Map
+            restaurants={results}
+            isLoading={isLoading}
+            userLocation={userLocation}
+          />
         </motion.div>
 
         <div className="space-y-4 overflow-y-auto max-h-64 pr-2">
           {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className={`h-24 rounded-2xl ${shimmerClassName}`} />
+                <div
+                  key={index}
+                  className={`h-24 rounded-2xl ${shimmerClassName}`}
+                />
               ))}
             </div>
           ) : (
@@ -122,4 +149,3 @@ export function RestaurantPanel({ payload, setFeaturePayload }: RestaurantPanelP
     </div>
   );
 }
-

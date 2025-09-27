@@ -2,11 +2,17 @@
 
 :root {
   color-scheme: dark;
+  --primary-red: #ff4757;
+  --primary-orange: #ff6b35;
+  --accent-yellow: #ffa726;
+  --warm-bg: #1a0e0a;
+  --card-bg: rgba(255, 71, 87, 0.1);
+  --sidebar-bg: rgba(255, 107, 53, 0.05);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 159, 52, 0.6) rgba(255, 255, 255, 0.08);
+  scrollbar-color: rgba(255, 107, 53, 0.6) rgba(255, 71, 87, 0.1);
 }
 
 ::-webkit-scrollbar {
@@ -14,14 +20,57 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, rgba(255, 159, 52, 0.8), rgba(143, 75, 255, 0.7));
+  background: linear-gradient(135deg, var(--primary-orange), var(--primary-red));
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card-bg);
 }
 
 body {
-  @apply bg-neutral-950 text-white antialiased;
+  @apply antialiased;
+  background: linear-gradient(135deg, #1a0e0a 0%, #2d1b1b 50%, #1a0e0a 100%);
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* Playful animations */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes pulse-warm {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(255, 71, 87, 0.5);
+  }
+}
+
+.bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+.pulse-warm {
+  animation: pulse-warm 2s ease-in-out infinite;
+}
+
+/* Food-themed gradients */
+.bg-food-gradient {
+  background: linear-gradient(135deg, 
+    rgba(255, 71, 87, 0.2) 0%, 
+    rgba(255, 107, 53, 0.15) 25%,
+    rgba(255, 167, 38, 0.1) 50%,
+    rgba(255, 107, 53, 0.15) 75%,
+    rgba(255, 71, 87, 0.2) 100%);
+}
+
+.text-food-gradient {
+  background: linear-gradient(135deg, #ff4757, #ff6b35, #ffa726);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

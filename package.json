@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@elevenlabs/react": "^0.7.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "canvas-confetti": "^1.9.3",
     "framer-motion": "^12.23.22",

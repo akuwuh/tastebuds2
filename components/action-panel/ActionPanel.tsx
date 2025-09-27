@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "framer-motion";
 import { ActiveFeature, FeatureIntent } from "@/lib/types";
+import type { LocationCoordinates } from "@/lib/location";
 import { RecipePanel } from "@/components/action-panel/RecipePanel";
 import { RestaurantPanel } from "@/components/action-panel/RestaurantPanel";
 import { OrderPanel } from "@/components/action-panel/OrderPanel";
@@ -15,6 +16,7 @@ interface ActionPanelProps {
   featurePayload?: Record<string, unknown>;
   setFeaturePayload: (payload?: Record<string, unknown>) => void;
   setActiveIntent: (intent: FeatureIntent | null) => void;
+  userLocation?: LocationCoordinates | null;
 }
 
 const panelVariants = {
@@ -30,6 +32,7 @@ export function ActionPanel({
   featurePayload,
   setFeaturePayload,
   setActiveIntent,
+  userLocation,
 }: ActionPanelProps) {
   useEffect(() => {
     if (!isOpen) {
@@ -52,6 +55,7 @@ export function ActionPanel({
           <RestaurantPanel
             payload={featurePayload}
             setFeaturePayload={setFeaturePayload}
+            userLocation={userLocation}
           />
         );
       case "order":
@@ -64,7 +68,7 @@ export function ActionPanel({
       default:
         return null;
     }
-  }, [activeFeature, featurePayload, setFeaturePayload]);
+  }, [activeFeature, featurePayload, setFeaturePayload, userLocation]);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -94,10 +98,10 @@ export function ActionPanel({
                   {activeFeature === "recipe"
                     ? "Cooking Companion"
                     : activeFeature === "maps"
-                      ? "Restaurant Explorer"
-                      : activeFeature === "order"
-                        ? "Delivery Simulator"
-                        : "Hungry Buddy"}
+                    ? "Restaurant Explorer"
+                    : activeFeature === "order"
+                    ? "Delivery Simulator"
+                    : "Hungry Buddy"}
                 </Dialog.Title>
                 <div className="mt-4 max-h-[60vh] overflow-y-auto pr-2">
                   {featureContent}
@@ -110,4 +114,3 @@ export function ActionPanel({
     </Dialog.Root>
   );
 }
-
