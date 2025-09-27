@@ -31,8 +31,43 @@ interface RecipeDisplayQueueItem {
   timestamp: number;
 }
 
+interface BookingRestaurantInfo {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  cuisine: string;
+  rating?: number;
+  image?: string;
+}
+
+interface BookingDetails {
+  date: string;
+  time: string;
+  partySize: number;
+  specialRequests?: string;
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+}
+
+interface RestaurantBookingData {
+  restaurant: BookingRestaurantInfo;
+  booking: BookingDetails;
+  confirmationNumber?: string;
+  status: "pending" | "confirmed" | "cancelled";
+}
+
+interface BookingDisplayQueueItem {
+  id: string;
+  bookings: RestaurantBookingData[];
+  searchQuery?: string;
+  timestamp: number;
+}
+
 declare global {
   var recipeDisplayQueue: RecipeDisplayQueueItem[] | undefined;
+  var bookingDisplayQueue: BookingDisplayQueueItem[] | undefined;
 
   interface SpeechRecognitionResultAlternative {
     transcript: string;
