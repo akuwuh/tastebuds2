@@ -38,7 +38,7 @@ export function ElevenLabsChat({
         },
       ]);
     },
-    onModeChange: (mode: string) => {
+    onModeChange: ({ mode }: { mode: string }) => {
       setConversationState(
         mode === "listening"
           ? "listening"

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import type {
-  DeliveryRestaurant,
-  RestaurantSearchResult,
-} from "@/lib/types";
+import type { DeliveryRestaurant, RestaurantSearchResult } from "@/lib/types";
 import { summarizeReviewSnippets } from "@/lib/summarize";
 import { randomBetween } from "@/lib/utils";
 
@@ -20,16 +17,19 @@ export async function GET(request: NextRequest) {
   if (!apiKey) {
     return NextResponse.json(
       {
-        error: "Google Maps API key is not configured. Set GOOGLE_MAPS_API_KEY.",
+        error:
+          "Google Maps API key is not configured. Set GOOGLE_MAPS_API_KEY.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 
   try {
     const textQuery = `${cuisine} restaurants ${location}`;
     const response = await fetch(
-      `${PLACES_API}?query=${encodeURIComponent(textQuery)}&radius=${radius}&key=${apiKey}`,
+      `${PLACES_API}?query=${encodeURIComponent(
+        textQuery
+      )}&radius=${radius}&key=${apiKey}`
     );
 
     if (!response.ok) {
@@ -55,7 +55,9 @@ export async function GET(request: NextRequest) {
     for (const result of topResults) {
       const reviewQuery = `${result.name ?? "restaurant"} reviews reddit`;
       const reviewResponse = await fetch(
-        `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(reviewQuery)}&key=${apiKey}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID ?? ""}`,
+        `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
+          reviewQuery
+        )}&key=${apiKey}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID ?? ""}`
       );
 
       let reviewSummary = "Reviews coming right up!";
@@ -88,11 +90,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (delivery) {
-      const deliveryResults: DeliveryRestaurant[] = enrichedResults.map((restaurant) => ({
-        ...restaurant,
-        etaMinutes: randomBetween(20, 55),
-        deliveryFee: `$${(randomBetween(0, 599) / 100).toFixed(2)}`,
-      }));
+      const deliveryResults: DeliveryRestaurant[] = enrichedResults.map(
+        (restaurant) => ({
+          ...restaurant,
+          etaMinutes: randomBetween(20, 55),
+          deliveryFee: `$${(randomBetween(0, 599) / 100).toFixed(2)}`,
+        })
+      );
 
       return NextResponse.json(deliveryResults, { status: 200 });
     }
@@ -103,8 +107,7 @@ export async function GET(request: NextRequest) {
     console.error("Restaurant search error", error);
     return NextResponse.json(
       { error: "Failed to fetch restaurant results" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
-

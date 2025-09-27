@@ -3,20 +3,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ActionPanel } from "@/components/action-panel/ActionPanel";
-import { ChatVisualizer } from "@/components/ChatVisualizer";
-import { ConversationLog } from "@/components/ConversationLog";
 import { ChatHistorySidebar } from "@/components/ChatHistorySidebar";
-import { ElevenLabsChat } from "@/components/ElevenLabsChat";
-import { MicrophoneButton } from "@/components/MicrophoneButton";
-import { playAudioFromText } from "@/lib/audio";
+import { UnifiedVoiceChat } from "@/components/UnifiedVoiceChat";
+import { BookingPopup, RestaurantBookingData } from "@/components/BookingPopup";
+import { RecipePopup, RecipeData } from "@/components/RecipePopup";
 import { useLocationPermission } from "@/lib/location";
+import "@/lib/restaurant-display"; // This makes the global functions available
 import {
   type ActiveFeature,
   type ChatMessage,
-  ConversationMode,
   FeatureIntent,
 } from "@/lib/types";
-import { fetchChatResponse } from "@/lib/chat";
 
 type ConversationState = "idle" | "listening" | "processing" | "speaking";
 
@@ -36,154 +33,16 @@ export default function Layout() {
   const [activeIntent, setActiveIntent] = useState<FeatureIntent | null>(null);
   const [isPanelOpen, setPanelOpen] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
-  const [useElevenLabs, setUseElevenLabs] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [bookingData, setBookingData] = useState<RestaurantBookingData[]>([]);
+  const [recipeData, setRecipeData] = useState<RecipeData[]>([]);
+  const [showBookingPopup, setShowBookingPopup] = useState(false);
+  const [showRecipePopup, setShowRecipePopup] = useState(false);
   const {
     permission: locationPermission,
     coordinates,
     requestPermission: requestLocation,
   } = useLocationPermission();
-
-  const startSpeechRecognition = useCallback(() => {
-    if (conversationState === "speaking") {
-      return;
-    }
-
-    const SpeechRecognitionCtor =
-      typeof window !== "undefined"
-        ? window.SpeechRecognition || window.webkitSpeechRecognition
-        : undefined;
-
-    if (!SpeechRecognitionCtor) {
-      console.warn("Speech recognition is not supported in this browser");
-      return;
-    }
-
-    const recognition = new SpeechRecognitionCtor();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setConversationState("listening");
-    };
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0]?.[0]?.transcript?.trim();
-      if (!transcript) {
-        return;
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "user",
-          content: transcript,
-          timestamp: Date.now(),
-        },
-      ]);
-      setPendingQuery(transcript);
-      setConversationState("processing");
-    };
-
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error("Speech recognition error", event.error);
-      setConversationState("idle");
-    };
-
-    recognition.onend = () => {
-      recognition.stop();
-      recognitionRef.current = null;
-
-      if (conversationState === "listening") {
-        setConversationState("idle");
-      }
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  }, [conversationState]);
-
-  const stopSpeechRecognition = useCallback(() => {
-    recognitionRef.current?.stop();
-    recognitionRef.current = null;
-    setConversationState("idle");
-  }, []);
-
-  const handleVoiceButtonClick = useCallback(() => {
-    if (conversationState === "listening") {
-      stopSpeechRecognition();
-    } else {
-      startSpeechRecognition();
-    }
-  }, [conversationState, startSpeechRecognition, stopSpeechRecognition]);
-
-  useEffect(() => {
-    if (!pendingQuery) return;
-
-    let cancel = false;
-
-    const processQuery = async () => {
-      try {
-        const { reply, intent, featurePayload } = await fetchChatResponse(
-          pendingQuery,
-          activeIntent
-        );
-
-        if (cancel) return;
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content: reply,
-            timestamp: Date.now(),
-          },
-        ]);
-
-        if (intent) {
-          setActiveIntent(intent.intent);
-          setActiveFeature(intent.feature);
-          setPanelOpen(true);
-        }
-
-        if (featurePayload) {
-          setFeaturePayload(featurePayload);
-        }
-
-        setConversationState("speaking");
-        await playAudioFromText(reply);
-      } catch (error) {
-        console.error(error);
-        if (cancel) return;
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content:
-              "I ran into an issue thinking that through. Mind asking me again?",
-            timestamp: Date.now(),
-            error: true,
-          },
-        ]);
-      } finally {
-        if (!cancel) {
-          setConversationState("idle");
-          setPendingQuery(null);
-        }
-      }
-    };
-
-    void processQuery();
-
-    return () => {
-      cancel = true;
-    };
-  }, [pendingQuery, activeIntent]);
 
   const [featurePayload, setFeaturePayload] = useState<
     Record<string, unknown> | undefined
@@ -194,18 +53,142 @@ export default function Layout() {
     setActiveFeature(null);
   }, []);
 
-  const currentMode = useMemo<ConversationMode>(() => {
-    switch (conversationState) {
-      case "listening":
-        return ConversationMode.Listening;
-      case "processing":
-        return ConversationMode.Processing;
-      case "speaking":
-        return ConversationMode.Speaking;
-      default:
-        return ConversationMode.Idle;
+  // Handle search results from voice chat
+  const handleSearchResults = useCallback((results: any[]) => {
+    setSearchResults(results);
+    if (results.length > 0) {
+      setActiveFeature("maps");
+      setPanelOpen(true);
     }
-  }, [conversationState]);
+  }, []);
+
+  // Function to trigger restaurant panel (can be called by ElevenLabs webhook)
+  const showRestaurantPanel = useCallback(
+    (restaurants: any[], searchQuery?: string) => {
+      // Convert restaurants to the format expected by RestaurantPanel
+      const restaurantResults = restaurants.map((restaurant, index) => ({
+        id: restaurant.id || `restaurant-${index}`,
+        name: restaurant.name,
+        rating: restaurant.rating || 4.0,
+        cuisine: restaurant.cuisine || "Restaurant",
+        address: restaurant.address,
+        distance: restaurant.distance || "Unknown distance",
+        location: {
+          lat: restaurant.latitude,
+          lng: restaurant.longitude,
+        },
+        placeUrl:
+          restaurant.website ||
+          `https://maps.google.com/?q=${encodeURIComponent(
+            restaurant.address
+          )}`,
+        image: restaurant.image,
+      }));
+
+      // Set up the restaurant panel
+      setFeaturePayload({
+        type: "maps",
+        stage: "results",
+        results: restaurantResults,
+        cuisine: searchQuery || "restaurants",
+      });
+      setActiveFeature("maps");
+      setActiveIntent("restaurant:results");
+      setPanelOpen(true);
+    },
+    []
+  );
+
+  // Listen for restaurant display events (for ElevenLabs integration)
+  useEffect(() => {
+    const handleRestaurantDisplay = (event: CustomEvent) => {
+      const { restaurants, searchQuery } = event.detail;
+      showRestaurantPanel(restaurants, searchQuery);
+    };
+
+    window.addEventListener("showRestaurants" as any, handleRestaurantDisplay);
+
+    return () => {
+      window.removeEventListener(
+        "showRestaurants" as any,
+        handleRestaurantDisplay
+      );
+    };
+  }, [showRestaurantPanel]);
+
+  // Poll for restaurant data from the display endpoint
+  useEffect(() => {
+    let lastRestaurantTimestamp = 0;
+    let lastBookingTimestamp = 0;
+    let lastRecipeTimestamp = 0;
+    let pollInterval: NodeJS.Timeout;
+
+    const pollForData = async () => {
+      try {
+        // Poll for restaurant data
+        const restaurantResponse = await fetch(
+          `/api/restaurants/poll?since=${lastRestaurantTimestamp}`
+        );
+        const restaurantResult = await restaurantResponse.json();
+
+        if (
+          restaurantResult.success &&
+          restaurantResult.hasNewData &&
+          restaurantResult.data
+        ) {
+          const { restaurants, searchQuery, timestamp } = restaurantResult.data;
+          lastRestaurantTimestamp = timestamp;
+          showRestaurantPanel(restaurants, searchQuery);
+        }
+
+        // Poll for booking data
+        const bookingResponse = await fetch(
+          `/api/restaurants/booking/poll?since=${lastBookingTimestamp}`
+        );
+        const bookingResult = await bookingResponse.json();
+
+        if (
+          bookingResult.success &&
+          bookingResult.hasNewData &&
+          bookingResult.data
+        ) {
+          const { bookings, timestamp } = bookingResult.data;
+          lastBookingTimestamp = timestamp;
+          setBookingData(bookings);
+          setShowBookingPopup(true);
+        }
+
+        // Poll for recipe data
+        const recipeResponse = await fetch(
+          `/api/recipes/poll?since=${lastRecipeTimestamp}`
+        );
+        const recipeResult = await recipeResponse.json();
+
+        if (
+          recipeResult.success &&
+          recipeResult.hasNewData &&
+          recipeResult.data
+        ) {
+          const { recipes, timestamp } = recipeResult.data;
+          lastRecipeTimestamp = timestamp;
+          setRecipeData(recipes);
+          setShowRecipePopup(true);
+        }
+      } catch (error) {
+        console.error("Error polling for data:", error);
+      }
+    };
+
+    // Start polling every 2 seconds
+    pollInterval = setInterval(pollForData, 2000);
+
+    // Cleanup on unmount
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [showRestaurantPanel]);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -287,32 +270,29 @@ export default function Layout() {
                   </span>
                 </div>
 
-                {/* Voice Toggle */}
-                <button
-                  onClick={() => setUseElevenLabs(!useElevenLabs)}
-                  className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    useElevenLabs
-                      ? "bg-orange-600 text-white hover:bg-orange-700"
-                      : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
-                  }`}
-                >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 016 0v6a3 3 0 01-3 3z"
-                    />
-                  </svg>
-                  <span className="hidden sm:inline">
-                    {useElevenLabs ? "Voice" : "Voice"}
+                {/* Status Indicator */}
+                <div className="inline-flex items-center gap-2 rounded-md bg-slate-800/60 px-3 py-2 text-sm">
+                  <div
+                    className={`h-2 w-2 rounded-full ${
+                      conversationState === "listening"
+                        ? "bg-red-400 animate-pulse"
+                        : conversationState === "processing"
+                        ? "bg-amber-400 animate-pulse"
+                        : conversationState === "speaking"
+                        ? "bg-blue-400 animate-pulse"
+                        : "bg-slate-500"
+                    }`}
+                  />
+                  <span className="text-slate-300 text-xs">
+                    {conversationState === "listening"
+                      ? "Listening..."
+                      : conversationState === "processing"
+                      ? "Processing..."
+                      : conversationState === "speaking"
+                      ? "Speaking..."
+                      : "Ready"}
                   </span>
-                </button>
+                </div>
               </div>
             </div>
           </div>
@@ -324,25 +304,15 @@ export default function Layout() {
             {/* Chat Interface */}
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex-1 rounded-xl bg-slate-800/50 border border-slate-700/50 overflow-hidden">
-                {useElevenLabs ? (
-                  <div className="h-full p-6">
-                    <ElevenLabsChat
-                      setMessages={setMessages}
-                      setConversationState={setConversationState}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-full flex flex-col">
-                    <div className="flex-1 flex flex-col items-center justify-center p-8">
-                      <div className="w-full max-w-4xl flex flex-col items-center gap-8">
-                        <ChatVisualizer conversationMode={currentMode} />
-                        <div className="w-full max-h-96 overflow-y-auto">
-                          <ConversationLog messages={messages} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <div className="h-full p-6">
+                  <UnifiedVoiceChat
+                    messages={messages}
+                    setMessages={setMessages}
+                    setConversationState={setConversationState}
+                    conversationState={conversationState}
+                    onSearchResults={handleSearchResults}
+                  />
+                </div>
               </div>
             </div>
 
@@ -408,16 +378,6 @@ export default function Layout() {
             </div>
           </div>
         </main>
-
-        {/* Voice Button */}
-        {!useElevenLabs && (
-          <div className="fixed bottom-6 right-6 z-30">
-            <MicrophoneButton
-              mode={currentMode}
-              onClick={handleVoiceButtonClick}
-            />
-          </div>
-        )}
       </div>
 
       {/* Action Panel */}
@@ -429,6 +389,20 @@ export default function Layout() {
         setFeaturePayload={setFeaturePayload}
         setActiveIntent={setActiveIntent}
         userLocation={coordinates}
+      />
+
+      {/* Booking Popup */}
+      <BookingPopup
+        bookings={bookingData}
+        isOpen={showBookingPopup}
+        onClose={() => setShowBookingPopup(false)}
+      />
+
+      {/* Recipe Popup */}
+      <RecipePopup
+        recipes={recipeData}
+        isOpen={showRecipePopup}
+        onClose={() => setShowRecipePopup(false)}
       />
     </div>
   );

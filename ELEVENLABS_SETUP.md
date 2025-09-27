@@ -6,7 +6,7 @@ Add these to your `.env.local` file:
 
 ```bash
 # ElevenLabs Configuration
-NEXT_PUBLIC_ELEVENLABS_AGENT_ID=your_agent_id_here
+NEXT_PUBLIC_ELEVENLABS_AGENT_ID=agent_4001k65xcjk0ftat2310agswdfv7
 
 # Google Search API (for recipe search)
 GOOGLE_SEARCH_API_KEY=your_google_api_key_here
