@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hungry Buddy",
-  description: "Hungry Buddy – your voice-first AI companion for foodie adventures.",
+  title: "TasteBuds",
+  description:
+    "TasteBuds – your voice-first AI companion for foodie adventures.",
 };
 
 export default function RootLayout({

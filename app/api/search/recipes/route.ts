@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
         source: new URL(item.link ?? "https://example.com").hostname.replace("www.", ""),
       }));
 
+    console.log(results);
     return NextResponse.json(results, { status: 200 });
   } catch (error) {
     console.error("Recipe search error", error);

@@ -86,7 +86,7 @@ const ChatVisualizerComponent = ({ conversationMode }: ChatVisualizerProps) => {
       </div>
       <div className="flex flex-col items-center">
         <p className="text-sm uppercase tracking-[0.4em] text-white/40">
-          Hungry Buddy
+          TasteBuds
         </p>
         <p className="text-lg font-medium text-white/80">
           {modeToDescription[conversationMode]}
@@ -97,4 +97,3 @@ const ChatVisualizerComponent = ({ conversationMode }: ChatVisualizerProps) => {
 };
 
 export const ChatVisualizer = memo(ChatVisualizerComponent);
-

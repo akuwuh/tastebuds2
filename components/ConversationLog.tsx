@@ -51,15 +51,15 @@ export function ConversationLog({ messages }: ConversationLogProps) {
                       isUser
                         ? "bg-hungry-amber-500/90 text-black"
                         : message.error
-                          ? "bg-red-500/90 text-white"
-                          : "bg-white/10 text-white"
+                        ? "bg-red-500/90 text-white"
+                        : "bg-white/10 text-white"
                     }`}
                 >
                   <p className="whitespace-pre-line text-sm leading-relaxed">
                     {message.content}
                   </p>
                   <span className="mt-1 block text-[0.65rem] uppercase tracking-[0.2em] text-white/40">
-                    {isUser ? "You" : "Hungry Buddy"}
+                    {isUser ? "You" : "TasteBuds"}
                   </span>
                 </div>
               </motion.div>
@@ -70,4 +70,3 @@ export function ConversationLog({ messages }: ConversationLogProps) {
     </div>
   );
 }
-

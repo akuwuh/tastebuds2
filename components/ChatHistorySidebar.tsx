@@ -36,21 +36,22 @@ export function ChatHistorySidebar({
         initial={{ x: -320 }}
         animate={{ x: isOpen ? 0 : -320 }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed left-0 top-0 z-50 h-full w-80 border-r border-orange-500/20 bg-gradient-to-b from-red-950/30 to-orange-950/20 backdrop-blur-xl lg:relative lg:z-auto lg:translate-x-0"
+        className="fixed left-0 top-0 z-50 h-full w-80 border-r border-slate-700/50 bg-slate-900/95 backdrop-blur-xl lg:relative lg:z-auto lg:translate-x-0"
         style={{ backdropFilter: "blur(20px)" }}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-orange-500/20 p-4">
-            <h2 className="text-lg font-semibold text-food-gradient">
-              🍽️ Chat History
+          <div className="flex items-center justify-between border-b border-slate-700/50 px-4 py-4">
+            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+              <span className="text-orange-500">💬</span>
+              Chat History
             </h2>
             <button
               onClick={onToggle}
-              className="rounded-full p-2 text-orange-300 hover:bg-orange-500/10 hover:text-orange-200 lg:hidden"
+              className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-300 lg:hidden"
             >
               <svg
-                className="h-5 w-5"
+                className="h-4 w-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -70,14 +71,16 @@ export function ChatHistorySidebar({
             {conversations.length === 0 ? (
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
-                  <div className="text-4xl mb-3 bounce-gentle">🤤</div>
-                  <p className="text-sm text-orange-300/70">
-                    Start chatting to see your food adventures here!
+                  <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">💭</span>
+                  </div>
+                  <p className="text-sm text-slate-400">
+                    Your conversations will appear here
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {conversations.map((conversation, index) => (
                   <ConversationItem
                     key={index}
@@ -90,9 +93,9 @@ export function ChatHistorySidebar({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-orange-500/20 p-4">
-            <div className="text-xs text-orange-300/50 text-center">
-              🔥 Powered by taste & technology
+          <div className="border-t border-slate-700/50 p-4">
+            <div className="text-xs text-slate-500 text-center">
+              TasteBuds • Food Discovery
             </div>
           </div>
         </div>
@@ -116,20 +119,20 @@ function ConversationItem({ conversation, index }: ConversationItemProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="group cursor-pointer rounded-xl border border-orange-500/10 bg-gradient-to-r from-red-500/5 to-orange-500/5 p-3 hover:border-orange-400/30 hover:from-red-500/10 hover:to-orange-500/10 transition-all duration-200"
+      transition={{ delay: index * 0.05 }}
+      className="group cursor-pointer rounded-lg border border-slate-700/50 bg-slate-800/30 p-3 hover:border-slate-600 hover:bg-slate-800/50 transition-all duration-200"
     >
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 text-lg">
+        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-sm">
           {getConversationEmoji(conversation.preview)}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white/90 line-clamp-2 group-hover:text-orange-200">
+          <p className="text-sm font-medium text-white line-clamp-2 group-hover:text-slate-200">
             {conversation.preview}
           </p>
-          <div className="mt-1 flex items-center gap-2 text-xs text-orange-300/60">
+          <div className="mt-1.5 flex items-center gap-2 text-xs text-slate-400">
             <span>{timeAgo}</span>
             <span>•</span>
             <span>{conversation.messageCount} messages</span>

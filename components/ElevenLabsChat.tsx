@@ -55,16 +55,17 @@ export function ElevenLabsChat({
     return (
       <div className="h-full flex flex-col items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="text-4xl mb-4">⚠️</div>
-          <h3 className="text-xl font-semibold text-orange-200 mb-2">
-            ElevenLabs Not Configured
+          <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚙️</span>
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">
+            Voice Chat Setup Required
           </h3>
-          <p className="text-orange-300/70 text-sm mb-4">
-            Please set up your ElevenLabs Agent ID in the environment variables
-            to enable AI voice features.
+          <p className="text-slate-400 text-sm mb-4">
+            Configure your ElevenLabs Agent ID to enable voice features
           </p>
-          <div className="text-xs text-orange-400/60 bg-orange-500/10 rounded-lg p-3">
-            Check ELEVENLABS_SETUP.md for detailed instructions
+          <div className="text-xs text-slate-500 bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+            Check ELEVENLABS_SETUP.md for setup instructions
           </div>
         </div>
       </div>
@@ -72,53 +73,45 @@ export function ElevenLabsChat({
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="mb-4 text-center">
-        <div className="text-4xl mb-2 bounce-gentle">🤖</div>
-        <p className="text-orange-200">ElevenLabs AI Voice Active</p>
-        <div className="mt-2 flex items-center justify-center gap-2">
+    <div className="h-full flex flex-col items-center justify-center">
+      <div className="text-center max-w-md">
+        <div className="w-20 h-20 rounded-full bg-slate-700/50 flex items-center justify-center mx-auto mb-6">
+          <span className="text-3xl">🎙️</span>
+        </div>
+
+        <h3 className="text-xl font-semibold text-white mb-2">
+          Voice Chat Active
+        </h3>
+
+        <div className="flex items-center justify-center gap-2 mb-4">
           <div
             className={`h-2 w-2 rounded-full ${
               conversation.status === "connected"
-                ? "bg-green-400"
+                ? "bg-emerald-400"
                 : conversation.status === "connecting"
-                ? "bg-yellow-400 animate-pulse"
+                ? "bg-amber-400 animate-pulse"
                 : "bg-red-400"
             }`}
           />
-          <span className="text-xs text-orange-300/70 capitalize">
+          <span className="text-sm text-slate-400 capitalize">
             {conversation.status}
           </span>
         </div>
-      </div>
 
-      <div className="flex-1 rounded-xl bg-black/20 p-4 flex flex-col items-center justify-center">
         {conversation.status === "connected" ? (
-          <div className="text-center">
-            <div className="text-2xl mb-3 bounce-gentle">🎙️</div>
-            <p className="text-orange-200 font-medium">Ready to chat!</p>
-            <p className="text-orange-300/70 text-sm mt-1">
-              Start speaking to begin your food adventure
-            </p>
-          </div>
+          <p className="text-slate-300">
+            Start speaking to begin your conversation
+          </p>
         ) : conversation.status === "connecting" ? (
-          <div className="text-center">
-            <div className="text-2xl mb-3 animate-pulse">🔄</div>
-            <p className="text-orange-200 font-medium">Connecting...</p>
-            <p className="text-orange-300/70 text-sm mt-1">
-              Setting up your AI food companion
-            </p>
-          </div>
+          <p className="text-slate-300">Connecting to voice service...</p>
         ) : (
-          <div className="text-center">
-            <div className="text-2xl mb-3">❌</div>
-            <p className="text-red-300 font-medium">Connection Failed</p>
-            <p className="text-orange-300/70 text-sm mt-1">
-              Please check your internet connection and try again
+          <div>
+            <p className="text-slate-300 mb-4">
+              Connection failed. Please try again.
             </p>
             <button
               onClick={() => conversation.startSession()}
-              className="mt-3 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg text-sm font-medium hover:from-red-600 hover:to-orange-600 transition-all"
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
               Retry Connection
             </button>

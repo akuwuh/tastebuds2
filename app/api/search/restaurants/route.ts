@@ -97,6 +97,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(deliveryResults, { status: 200 });
     }
 
+    console.log(enrichedResults);
     return NextResponse.json(enrichedResults, { status: 200 });
   } catch (error) {
     console.error("Restaurant search error", error);
