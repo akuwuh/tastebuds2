@@ -1,6 +1,16 @@
 export {};
 
+interface RecipeDisplayQueueItem {
+  id: string;
+  recipes: Array<unknown>;
+  searchQuery?: string;
+  dietary?: string;
+  timestamp: number;
+}
+
 declare global {
+  var recipeDisplayQueue: RecipeDisplayQueueItem[] | undefined;
+
   interface SpeechRecognitionResultAlternative {
     transcript: string;
     confidence: number;
