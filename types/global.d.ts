@@ -1,10 +1,33 @@
 export {};
 
+interface RecipeNutritionInfo {
+  calories: number;
+  protein: string;
+  carbs: string;
+  fat: string;
+}
+
+interface RecipeDisplayData {
+  id: string;
+  title: string;
+  description: string;
+  cuisine: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  cookTime: string;
+  prepTime: string;
+  servings: number;
+  ingredients: string[];
+  instructions: string[];
+  image?: string;
+  nutrition?: RecipeNutritionInfo;
+  tags?: string[];
+}
+
 interface RecipeDisplayQueueItem {
   id: string;
-  recipes: Array<unknown>;
+  recipes: RecipeDisplayData[];
   searchQuery?: string;
-  dietary?: string;
+  dietary?: string[];
   timestamp: number;
 }
 
